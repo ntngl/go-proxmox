@@ -369,7 +369,7 @@ func (proxmox ProxMox) PostForm(endpoint string, form url.Values) (map[string]in
 	}
 
 	if r.StatusCode != 200 {
-		return nil, errors.New("HTTP Error " + r.Status)
+		return nil, fmt.Errorf("HTTP Error %s at target %s", r.Status, target)
 	}
 
 	response, err := ioutil.ReadAll(r.Body)
