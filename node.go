@@ -35,8 +35,6 @@ func (node Node) Qemu() (QemuList, error) {
 	var results []interface{}
 	var VMIdFloat float64
 
-	//fmt.Println("!Qemu")
-
 	data, err = node.Proxmox.Get("nodes/" + node.Node + "/qemu")
 	if err != nil {
 		return nil, err
@@ -116,8 +114,6 @@ func (node Node) Storages() (StorageList, error) {
 	var storage Storage
 	var results []interface{}
 
-	//fmt.Println("!Storages")
-
 	data, err = node.Proxmox.Get("nodes/" + node.Node + "/storage")
 	if err != nil {
 		return nil, err
@@ -153,21 +149,17 @@ func (node Node) CreateQemuVM(Name string, Sockets int, Cores int, MemorySize in
 	var form url.Values
 	var target string
 
-	//fmt.Println("!CreateQemuVM")
-
 	newVmId, err = node.Proxmox.NextVMId()
 	if err != nil {
 		return "", err
 	}
-	//fmt.Println("new VM ID: " + newVmId)
+
 	storageList, err = node.Storages()
 	results, err = storageList["local"].CreateVolume("vm-"+newVmId+"-disk-0.qcow2", DiskSize, newVmId)
 	if err != nil {
 		return "", err
 	}
 	storageId = results["data"].(string)
-
-	//fmt.Println("!CreateVolume")
 
 	form = url.Values{
 		"vmid":    {newVmId},
@@ -187,8 +179,6 @@ func (node Node) CreateQemuVM(Name string, Sockets int, Cores int, MemorySize in
 		fmt.Println("Error creating VM!!!")
 		return "", err
 	}
-	//fmt.Println("VM " + newVmId + " created")
-
 	return newVmId, err
 }
 
@@ -227,7 +217,6 @@ func (node Node) Tasks(Limit int, Start int, UserFilter string, VmId string) (Ta
 	var task Task
 	var results []interface{}
 
-	//fmt.Println("!Tasks")
 	target = "nodes/" + node.Node + "/tasks?"
 	if Limit > 0 {
 		target = target + "limit=" + strconv.Itoa(Limit) + "&"
@@ -263,6 +252,5 @@ func (node Node) Tasks(Limit int, Start int, UserFilter string, VmId string) (Ta
 		}
 		list[task.UPid] = task
 	}
-
 	return list, nil
 }

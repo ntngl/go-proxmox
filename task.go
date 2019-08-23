@@ -34,7 +34,7 @@ func (task Task) GetStatus() (string, string, error) {
 
 	upidParts := strings.Split(task.UPid, ":")
 	target = "nodes/" + upidParts[1] + "/tasks/" + task.UPid + "/status"
-	//fmt.Println("target  " + target)
+
 	raw, err = task.proxmox.GetBytes(target)
 	if err != nil {
 		return "", "", err

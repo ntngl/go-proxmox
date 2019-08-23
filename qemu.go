@@ -66,8 +66,6 @@ func (qemu QemuVM) Delete() (map[string]interface{}, error) {
 	var data map[string]interface{}
 	var err error
 
-	//fmt.Print("!QemuDelete ", qemu.VMId)
-
 	target = "nodes/" + qemu.Node.Node + "/qemu/" + strconv.FormatFloat(qemu.VMId, 'f', 0, 64)
 	data, err = qemu.Node.Proxmox.Delete(target)
 	if err != nil {
@@ -95,8 +93,6 @@ func (qemu QemuVM) Config() (QemuConfig, error) {
 	var config QemuConfig
 	var err error
 	var description string
-
-	//fmt.Print("!QemuConfig ", qemu.VMId)
 
 	target = "nodes/" + qemu.Node.Node + "/qemu/" + strconv.FormatFloat(qemu.VMId, 'f', 0, 64) + "/config"
 	data, err = qemu.Node.Proxmox.Get(target)
@@ -158,8 +154,6 @@ func (qemu QemuVM) CurrentStatus() (QemuStatus, error) {
 	var results map[string]interface{}
 	var status QemuStatus
 
-	//fmt.Println("!QemuStatus ", strconv.FormatFloat(qemu.VMId, 'f', 0, 64))
-
 	target = "nodes/" + qemu.Node.Node + "/qemu/" + strconv.FormatFloat(qemu.VMId, 'f', 0, 64) + "/status/current"
 	data, err = qemu.Node.Proxmox.Get(target)
 	if err != nil {
@@ -207,8 +201,6 @@ func (qemu QemuVM) Start() error {
 	var target string
 	var err error
 
-	//fmt.Println("!QemuStart ", strconv.FormatFloat(qemu.VMId, 'f', 0, 64))
-
 	target = "nodes/" + qemu.Node.Node + "/qemu/" + strconv.FormatFloat(qemu.VMId, 'f', 0, 64) + "/status/start"
 	_, err = qemu.Node.Proxmox.Post(target, "")
 	return err
@@ -217,8 +209,6 @@ func (qemu QemuVM) Start() error {
 func (qemu QemuVM) Stop() (string, error) {
 	var target string
 	var err error
-
-	//fmt.Print("!QemuStop ", qemu.VMId)
 
 	target = "nodes/" + qemu.Node.Node + "/qemu/" + strconv.FormatFloat(qemu.VMId, 'f', 0, 64) + "/status/stop"
 	data, err := qemu.Node.Proxmox.Post(target, "")
@@ -234,8 +224,6 @@ func (qemu QemuVM) Stop() (string, error) {
 func (qemu QemuVM) Shutdown() (Task, error) {
 	var target string
 	var err error
-
-	//fmt.Print("!QemuShutdown ", qemu.VMId)
 
 	target = "nodes/" + qemu.Node.Node + "/qemu/" + strconv.FormatFloat(qemu.VMId, 'f', 0, 64) + "/status/shutdown"
 	data, err := qemu.Node.Proxmox.Post(target, "")
@@ -256,8 +244,6 @@ func (qemu QemuVM) Suspend() error {
 	var target string
 	var err error
 
-	//fmt.Print("!QemuSuspend ", qemu.VMId)
-
 	target = "nodes/" + qemu.Node.Node + "/qemu/" + strconv.FormatFloat(qemu.VMId, 'f', 0, 64) + "/status/suspend"
 	_, err = qemu.Node.Proxmox.Post(target, "")
 	return err
@@ -266,8 +252,6 @@ func (qemu QemuVM) Suspend() error {
 func (qemu QemuVM) Resume() error {
 	var target string
 	var err error
-
-	//fmt.Print("!QemuResume ", qemu.VMId)
 
 	target = "nodes/" + qemu.Node.Node + "/qemu/" + strconv.FormatFloat(qemu.VMId, 'f', 0, 64) + "/status/resume"
 	_, err = qemu.Node.Proxmox.Post(target, "")
@@ -324,7 +308,6 @@ func (qemu QemuVM) SetDescription(description string) error {
 	if err != err {
 		return err
 	}
-
 	return nil
 }
 
@@ -342,7 +325,6 @@ func (qemu QemuVM) SetMemory(memory string) error {
 	if err != err {
 		return err
 	}
-
 	return nil
 }
 
@@ -467,6 +449,5 @@ func (qemu QemuVM) Rollback(name string) (string, error) {
 	}
 
 	UPid := data["data"].(string)
-
 	return UPid, nil
 }

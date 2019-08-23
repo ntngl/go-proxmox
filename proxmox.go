@@ -81,26 +81,26 @@ func NewProxMox(HostName string, UserName string, Password string) (*ProxMox, er
 	data, err = proxmox.PostForm("access/ticket", form)
 	if err != nil {
 		return nil, err
-	} else {
-		proxmox.ConnectionTicket = data["ticket"].(string)
-		proxmox.connectionCSRFPreventionToken = data["CSRFPreventionToken"].(string)
-		proxmox.Client.Jar, err = cookiejar.New(nil)
-		domain = proxmox.Hostname
-
-		cookie := &http.Cookie{
-			Name:  "PVEAuthCookie",
-			Value: data["ticket"].(string),
-			Path:  "/",
-		}
-		cookies = append(cookies, cookie)
-		cookieURL, err := url.Parse(domain + "/")
-		if err != nil {
-			return nil, err
-		}
-		proxmox.Client.Jar.SetCookies(cookieURL, cookies)
-
-		return proxmox, nil
 	}
+
+	proxmox.ConnectionTicket = data["ticket"].(string)
+	proxmox.connectionCSRFPreventionToken = data["CSRFPreventionToken"].(string)
+	proxmox.Client.Jar, err = cookiejar.New(nil)
+	domain = proxmox.Hostname
+
+	cookie := &http.Cookie{
+		Name:  "PVEAuthCookie",
+		Value: data["ticket"].(string),
+		Path:  "/",
+	}
+	cookies = append(cookies, cookie)
+	cookieURL, err := url.Parse(domain + "/")
+	if err != nil {
+		return nil, err
+	}
+	proxmox.Client.Jar.SetCookies(cookieURL, cookies)
+
+	return proxmox, nil
 }
 
 func (proxmox ProxMox) Nodes() (NodeList, error) {
@@ -109,8 +109,6 @@ func (proxmox ProxMox) Nodes() (NodeList, error) {
 	var list NodeList
 	var node Node
 	var results []interface{}
-
-	//fmt.Println("!Nodes")
 
 	data, err = proxmox.Get("nodes")
 	if err != nil {
@@ -300,7 +298,6 @@ func (proxmox ProxMox) Pools() (PoolList, error) {
 	var pool Pool
 	var results []interface{}
 
-	//fmt.Println("!Tasks")
 	target = "pools"
 	data, err = proxmox.Get(target)
 	if err != nil {
@@ -317,7 +314,6 @@ func (proxmox ProxMox) Pools() (PoolList, error) {
 
 		list[pool.Poolid] = pool
 	}
-
 	return list, nil
 }
 
@@ -328,13 +324,8 @@ func (proxmox ProxMox) NewPool(name string, comment string) (map[string]interfac
 
 	result, err := proxmox.PostForm("pools", poolForm)
 	if err != nil {
-		fmt.Println("Error while posting form")
-		fmt.Println(err)
-		return result, err
+		return nil, err
 	}
-
-	fmt.Printf("Result: %s", result)
-
 	return result, nil
 }
 
@@ -345,27 +336,15 @@ func (proxmox ProxMox) UpdatePool(name string, comment string) (map[string]inter
 
 	result, err := proxmox.PutForm("pools/"+name, poolForm)
 	if err != nil {
-		fmt.Println("Error while posting form")
-		fmt.Println(err)
-		return result, err
+		return nil, err
 	}
-
-	fmt.Printf("Result: %s", result)
-
 	return result, nil
 }
 
 func (proxmox ProxMox) DeletePool(name string) error {
-	result, err := proxmox.Delete(fmt.Sprintf("pools/%s", name))
-
-	if err != nil {
-		fmt.Printf("Error deleting pool: %s", name)
-		fmt.Println(err)
-		fmt.Printf("Result was: %s", result)
+	if _, err := proxmox.Delete(fmt.Sprintf("pools/%s", name)); err != nil {
+		return err
 	}
-
-	fmt.Printf("Created pool: %s\n", name)
-
 	return nil
 }
 
@@ -374,11 +353,7 @@ func (proxmox ProxMox) PostForm(endpoint string, form url.Values) (map[string]in
 	var data interface{}
 	var req *http.Request
 
-	//fmt.Println("!PostForm")
-
 	target = proxmox.BaseURL + endpoint
-	//target = "http://requestb.in/1ls8s9d1"
-	//fmt.Println("POST form " + target)
 
 	req, err := http.NewRequest("POST", target, bytes.NewBufferString(form.Encode()))
 
@@ -388,32 +363,22 @@ func (proxmox ProxMox) PostForm(endpoint string, form url.Values) (map[string]in
 		req.Header.Add("CSRFPreventionToken", proxmox.connectionCSRFPreventionToken)
 	}
 
-	//fmt.Printf("Posting form values: %s\n", req)
-
 	r, err := proxmox.Client.Do(req)
 	if err != nil {
-		fmt.Println("Error while posting")
-		fmt.Println(err)
 		return nil, err
 	}
-	//fmt.Print("HTTP status ")
-	//fmt.Println(r.StatusCode)
+
 	if r.StatusCode != 200 {
 		return nil, errors.New("HTTP Error " + r.Status)
-		//	} else {
 	}
 
 	response, err := ioutil.ReadAll(r.Body)
 	r.Body.Close()
 	if err != nil {
-		fmt.Println("Error while reading body")
-		fmt.Println(err)
 		return nil, err
 	}
 	err = json.Unmarshal(response, &data)
 	if err != nil {
-		fmt.Println("Error while processing JSON")
-		fmt.Println(err)
 		return nil, err
 	}
 	m := data.(map[string]interface{})
@@ -430,11 +395,7 @@ func (proxmox ProxMox) Post(endpoint string, input string) (map[string]interface
 	var data interface{}
 	var req *http.Request
 
-	//fmt.Println("!Post")
-
 	target = proxmox.BaseURL + endpoint
-	//target = "http://requestb.in/1ls8s9d1"
-	//fmt.Println("POST form " + target)
 
 	req, err := http.NewRequest("POST", target, bytes.NewBufferString(input))
 
@@ -444,28 +405,20 @@ func (proxmox ProxMox) Post(endpoint string, input string) (map[string]interface
 	}
 	r, err := proxmox.Client.Do(req)
 	if err != nil {
-		fmt.Println("Error while posting")
-		fmt.Println(err)
 		return nil, err
 	}
-	//fmt.Print("HTTP status ")
-	//fmt.Println(r.StatusCode)
+
 	if r.StatusCode != 200 {
 		return nil, errors.New("HTTP Error " + r.Status)
-		//	} else {
 	}
 
 	response, err := ioutil.ReadAll(r.Body)
 	r.Body.Close()
 	if err != nil {
-		fmt.Println("Error while reading body")
-		fmt.Println(err)
 		return nil, err
 	}
 	err = json.Unmarshal(response, &data)
 	if err != nil {
-		fmt.Println("Error while processing JSON")
-		fmt.Println(err)
 		return nil, err
 	}
 	m := data.(map[string]interface{})
@@ -482,8 +435,6 @@ func (proxmox ProxMox) PutForm(endpoint string, form url.Values) (map[string]int
 	var data interface{}
 	var req *http.Request
 
-	//fmt.Println("!PutForm")
-
 	target = proxmox.BaseURL + endpoint
 
 	req, err := http.NewRequest("PUT", target, bytes.NewBufferString(form.Encode()))
@@ -493,36 +444,27 @@ func (proxmox ProxMox) PutForm(endpoint string, form url.Values) (map[string]int
 	if proxmox.connectionCSRFPreventionToken != "" {
 		req.Header.Add("CSRFPreventionToken", proxmox.connectionCSRFPreventionToken)
 	}
+
 	r, err := proxmox.Client.Do(req)
-	defer r.Body.Close()
 	if err != nil {
-		fmt.Println("Error while puting")
-		fmt.Println(err)
 		return nil, err
 	}
-	//fmt.Print("HTTP status ")
-	//fmt.Println(r.StatusCode)
+	defer r.Body.Close()
+
 	if r.StatusCode != 200 {
-		//spew.Dump(r)
 		return nil, errors.New("HTTP Error " + r.Status)
-		//	} else {
-		//		spew.Dump(r)
 	}
 
 	response, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Println("Error while reading body")
-		fmt.Println(err)
 		return nil, err
 	}
 	err = json.Unmarshal(response, &data)
 	if err != nil {
-		fmt.Println("Error while processing JSON")
-		fmt.Println(err)
 		return nil, err
 	}
 	m := data.(map[string]interface{})
-	//spew.Dump(m)
+
 	switch m["data"].(type) {
 	case map[string]interface{}:
 		d := m["data"].(map[string]interface{})
@@ -542,7 +484,6 @@ func (proxmox ProxMox) GetRaw(endpoint string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return response, nil
 }
 
@@ -550,37 +491,31 @@ func (proxmox ProxMox) Get(endpoint string) (map[string]interface{}, error) {
 	var target string
 	var data interface{}
 
-	//fmt.Println("!get")
-
 	target = proxmox.BaseURL + endpoint
-	//target = "http://requestb.in/1ls8s9d1"
-	//fmt.Println("GET " + target)
+
 	r, err := proxmox.Client.Get(target)
 	if err != nil {
 		return nil, err
 	}
+
 	response, err := ioutil.ReadAll(r.Body)
 	r.Body.Close()
 	if err != nil {
 		return nil, err
 	}
+
 	err = json.Unmarshal(response, &data)
 	if err != nil {
 		return nil, err
 	}
 	m := data.(map[string]interface{})
-	//d := m["data"].(map[string]interface{})
 	return m, nil
 }
 
 func (proxmox ProxMox) GetBytes(endpoint string) ([]byte, error) {
 	var target string
 
-	//fmt.Println("!getBytes")
-
 	target = proxmox.BaseURL + endpoint
-	//target = "http://requestb.in/1ls8s9d1"
-	//fmt.Println("GET " + target)
 	r, err := proxmox.Client.Get(target)
 	if err != nil {
 		return nil, err
@@ -598,11 +533,7 @@ func (proxmox ProxMox) Delete(endpoint string) (map[string]interface{}, error) {
 	var data interface{}
 	var req *http.Request
 
-	//fmt.Println("!PostForm")
-
 	target = proxmox.BaseURL + endpoint
-	//target = "http://requestb.in/1ls8s9d1"
-	//fmt.Println("DELETE " + target)
 
 	req, err := http.NewRequest("DELETE", target, nil)
 
@@ -610,28 +541,20 @@ func (proxmox ProxMox) Delete(endpoint string) (map[string]interface{}, error) {
 
 	r, err := proxmox.Client.Do(req)
 	if err != nil {
-		fmt.Println("Error while deleting")
-		fmt.Println(err)
 		return nil, err
 	}
-	//fmt.Print("HTTP status ")
-	//fmt.Println(r.StatusCode)
+
 	if r.StatusCode != 200 {
 		return nil, errors.New("HTTP Error " + r.Status)
-		//	} else {
 	}
 
 	response, err := ioutil.ReadAll(r.Body)
 	r.Body.Close()
 	if err != nil {
-		fmt.Println("Error while reading body")
-		fmt.Println(err)
 		return nil, err
 	}
 	err = json.Unmarshal(response, &data)
 	if err != nil {
-		fmt.Println("Error while processing JSON")
-		fmt.Println(err)
 		return nil, err
 	}
 	m := data.(map[string]interface{})

@@ -1,7 +1,6 @@
 package proxmox
 
 import (
-	"fmt"
 	"net/url"
 )
 
@@ -25,8 +24,6 @@ func (storage Storage) CreateVolume(FileName string, DiskSize string, VmId strin
 	var data map[string]interface{}
 	var target string
 
-	//fmt.Println("!CreateVolume")
-
 	form = url.Values{
 		"filename": {FileName},
 		//		"node":     {storage.node.Node},
@@ -38,10 +35,8 @@ func (storage Storage) CreateVolume(FileName string, DiskSize string, VmId strin
 	target = "nodes/" + storage.Node.Node + "/storage/" + storage.Storage + "/content"
 	data, err = storage.Node.Proxmox.PostForm(target, form)
 	if err != nil {
-		fmt.Println("Error!!!")
 		return nil, err
 	}
-	//fmt.Println("Storage created")
 	return data, err
 }
 
@@ -52,8 +47,6 @@ func (storage Storage) Volumes() (VolumeList, error) {
 	var list VolumeList
 	var volume Volume
 	var results []interface{}
-
-	//fmt.Println("!Volumes")
 
 	target = "nodes/" + storage.Node.Node + "/storage/" + storage.Storage + "/content"
 	data, err = storage.Node.Proxmox.Get(target)
